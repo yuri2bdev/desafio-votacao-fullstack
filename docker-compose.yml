@@ -1,0 +1,25 @@
+services:
+  # Banco de Dados
+  postgres:
+    image: postgres:16-alpine
+    container_name: votacao-db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: db_votacao
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Mensageria (Kafka com KRaft - Confluent Local)
+  kafka:
+    image: confluentinc/confluent-local:7.5.0
+    container_name: votacao-kafka
+    restart: always
+    ports:
+      - "9092:9092"
+
+volumes:
+  postgres_data:
