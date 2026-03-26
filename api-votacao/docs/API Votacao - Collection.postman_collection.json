@@ -1,0 +1,189 @@
+{
+  "info": {
+    "_postman_id": "d52867cc-bee7-4f15-953b-0a9ca53f3d3d",
+    "name": "API Votacao - Collection Copy",
+    "description": "Collection da API de Votacao com endpoints de Pautas, Sessoes e Votos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Pautas",
+      "item": [
+        {
+          "name": "Cadastrar Pauta",
+          "id": "46283895-b9a5-4919-967b-fe40c45a63fd",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Aprovacao do novo estatuto da cooperativa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/pautas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pautas"
+              ]
+            },
+            "description": "Cria uma nova pauta para votacao."
+          },
+          "response": []
+        }
+      ],
+      "id": "7c96feeb-634d-4927-9f00-d8a858bbe95d"
+    },
+    {
+      "name": "Sessões",
+      "item": [
+        {
+          "name": "Abrir Sessao de Votacao",
+          "id": "13ffaf22-0631-4a36-9e81-1c3e2e36b00c",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duracaoSegundos\": 120\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/pautas/:pautaId/sessao",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pautas",
+                ":pautaId",
+                "sessao"
+              ],
+              "variable": [
+                {
+                  "key": "pautaId",
+                  "value": "00000000-0000-0000-0000-000000000001",
+                  "description": "ID da pauta"
+                }
+              ]
+            },
+            "description": "Abre uma sessao para a pauta informada. Se duracaoSegundos nao for enviada, o default da API e aplicado."
+          },
+          "response": []
+        }
+      ],
+      "id": "6edbc45f-9f42-4e78-9708-79b97866066b"
+    },
+    {
+      "name": "Votos",
+      "item": [
+        {
+          "name": "Receber Voto (Async)",
+          "id": "bd97c214-56b2-4879-9ad3-9767153e74e1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"associadoId\": \"12345678901\",\n  \"escolha\": \"SIM\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/pautas/:pautaId/votos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pautas",
+                ":pautaId",
+                "votos"
+              ],
+              "variable": [
+                {
+                  "key": "pautaId",
+                  "value": "00000000-0000-0000-0000-000000000001",
+                  "description": "ID da pauta"
+                }
+              ]
+            },
+            "description": "Recebe voto para uma pauta, valida regras e publica evento no Kafka. Retorno esperado: 202 Accepted."
+          },
+          "response": []
+        },
+        {
+          "name": "Contabilizar Votos da Pauta",
+          "id": "5481e00b-bf77-470a-b153-a90a2c4274da",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pautas/:pautaId/resultado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pautas",
+                ":pautaId",
+                "resultado"
+              ],
+              "variable": [
+                {
+                  "key": "pautaId",
+                  "value": "00000000-0000-0000-0000-000000000001",
+                  "description": "ID da pauta"
+                }
+              ]
+            },
+            "description": "Retorna o resultado da votacao da pauta: total de SIM, total de NAO e status final."
+          },
+          "response": []
+        }
+      ],
+      "id": "d8609a1b-e85f-4555-bfae-bb3ca2cfa7ad"
+    }
+  ],
+  "variable": [
+    {
+      "id": "d9c92fe6-0654-4102-8c06-c440a1d5bd33",
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
