@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -72,6 +73,44 @@ class RestCpfValidatorClientTest {
         assertThrows(IntegracaoException.class, () -> client.validarCpf("12345678901"));
     }
 
+    @Test
+    void deveLancarIntegracaoQuandoRespostaVierNula() {
+        RestCpfValidatorClient client = new RestCpfValidatorClient(restClient);
+        mockChainWithResponse(null);
+
+        assertThrows(IntegracaoException.class, () -> client.validarCpf("12345678901"));
+    }
+
+    @Test
+    void deveLancarIntegracaoQuandoStatusVierNulo() {
+        RestCpfValidatorClient client = new RestCpfValidatorClient(restClient);
+        mockChainWithResponse(new CpfValidationResponse(null));
+
+        assertThrows(IntegracaoException.class, () -> client.validarCpf("12345678901"));
+    }
+
+    @Test
+    void deveLancarIntegracaoQuandoServicoRetornar5xx() {
+        RestCpfValidatorClient client = new RestCpfValidatorClient(restClient);
+
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), eq("12345678901"))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(CpfValidationResponse.class)).thenThrow(
+                HttpServerErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Error", HttpHeaders.EMPTY, null, null)
+        );
+
+        assertThrows(IntegracaoException.class, () -> client.validarCpf("12345678901"));
+    }
+
+    @Test
+    void deveLancarIntegracaoQuandoOcorrerErroInesperado() {
+        RestCpfValidatorClient client = new RestCpfValidatorClient(restClient);
+        when(restClient.get()).thenThrow(new RuntimeException("falha inesperada"));
+
+        assertThrows(IntegracaoException.class, () -> client.validarCpf("12345678901"));
+    }
+
     private void mockChainWithResponse(CpfValidationResponse response) {
         when(restClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString(), eq("12345678901"))).thenReturn(requestHeadersSpec);
@@ -79,5 +118,3 @@ class RestCpfValidatorClientTest {
         when(responseSpec.body(CpfValidationResponse.class)).thenReturn(response);
     }
 }
-
-

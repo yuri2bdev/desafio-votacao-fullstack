@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,6 +34,17 @@ public class PautaService {
     public Pauta buscarOuFalhar(UUID pautaId) {
         return pautaRepository.findById(pautaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pauta nao encontrada: " + pautaId));
+    }
+
+    public List<PautaResponse> listarTodas() {
+        return pautaRepository.findAll().stream()
+                .map(p -> new PautaResponse(p.getId(), p.getDescricao(), p.getDataCriacao()))
+                .toList();
+    }
+
+    public PautaResponse buscarPorId(UUID pautaId) {
+        Pauta pauta = buscarOuFalhar(pautaId);
+        return new PautaResponse(pauta.getId(), pauta.getDescricao(), pauta.getDataCriacao());
     }
 }
 

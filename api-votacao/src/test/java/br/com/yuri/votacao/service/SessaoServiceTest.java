@@ -4,12 +4,12 @@ import br.com.yuri.votacao.domain.Pauta;
 import br.com.yuri.votacao.domain.SessaoVotacao;
 import br.com.yuri.votacao.dto.SessaoResponse;
 import br.com.yuri.votacao.exception.BusinessConflictException;
+import br.com.yuri.votacao.exception.ResourceNotFoundException;
 import br.com.yuri.votacao.exception.SessaoFechadaException;
 import br.com.yuri.votacao.repository.SessaoVotacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -93,5 +94,40 @@ class SessaoServiceTest {
 
         assertThrows(SessaoFechadaException.class, () -> sessaoService.validarSessaoAberta(pautaId));
     }
-}
 
+    @Test
+    void deveLancarNotFoundQuandoSessaoNaoExistir() {
+        UUID pautaId = UUID.randomUUID();
+        when(sessaoVotacaoRepository.findByPautaId(eq(pautaId))).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> sessaoService.validarSessaoAberta(pautaId));
+    }
+
+    @Test
+    void deveLancarErroQuandoSessaoAindaNaoAbriu() {
+        UUID pautaId = UUID.randomUUID();
+        SessaoVotacao sessao = SessaoVotacao.builder()
+                .id(UUID.randomUUID())
+                .dataAbertura(LocalDateTime.of(2026, 1, 1, 11, 0))
+                .dataFechamento(LocalDateTime.of(2026, 1, 1, 12, 0))
+                .build();
+
+        when(sessaoVotacaoRepository.findByPautaId(eq(pautaId))).thenReturn(Optional.of(sessao));
+
+        assertThrows(SessaoFechadaException.class, () -> sessaoService.validarSessaoAberta(pautaId));
+    }
+
+    @Test
+    void naoDeveLancarErroQuandoSessaoEstiverAberta() {
+        UUID pautaId = UUID.randomUUID();
+        SessaoVotacao sessao = SessaoVotacao.builder()
+                .id(UUID.randomUUID())
+                .dataAbertura(LocalDateTime.of(2026, 1, 1, 9, 0))
+                .dataFechamento(LocalDateTime.of(2026, 1, 1, 11, 0))
+                .build();
+
+        when(sessaoVotacaoRepository.findByPautaId(eq(pautaId))).thenReturn(Optional.of(sessao));
+
+        assertDoesNotThrow(() -> sessaoService.validarSessaoAberta(pautaId));
+    }
+}
